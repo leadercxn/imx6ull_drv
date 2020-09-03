@@ -16,7 +16,7 @@ clean:
 	@rm .*cmd *.mod* *.o *.order *.sym* .tmp* -rf
 
 copy:
-	@cp drv_poll.ko  /home/cxn/linux/nfs/rootfs/home/dev_app/app_poll
+	@cp drv_poll.ko  /home/cxn/linux/nfs/rootfs/home/dev_app/imx6ull_app
 
 
 

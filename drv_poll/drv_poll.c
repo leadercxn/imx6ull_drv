@@ -254,12 +254,10 @@ static   unsigned int  dev_poll(struct file* filp, struct poll_table_struct*  ta
 	/* 阻塞等待唤醒之后，判断是否为当前设备触发 */
 	if(m_wake_up_condition == true)
 	{
-		return  POLLIN | POLLRDNORM;
+		return  POLLIN | POLLRDNORM ;   //EPOLLIN 和 POLLIN 值相等,使用epoll的时候，应该起作用
 	}
 
 	return 0;
-}
-
 //设备操作数据结构体
 static file_operations_t dev_fops ={
     .owner = THIS_MODULE ,
