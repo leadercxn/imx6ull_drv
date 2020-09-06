@@ -13,7 +13,7 @@ typedef struct class               class_t ;
 typedef struct device_node         nd_t ;
 typedef struct property            proper_t ;
 typedef struct timer_list          timer_list_t ;
-
+typedef struct fasync_struct       fasync_struct_t;
 
 
 

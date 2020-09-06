@@ -30,20 +30,25 @@
 
 
 //用户自定义头文件
-#define TRACE_MODULE    "drv_poll.c"
+#define TRACE_MODULE    "drv_fasync.c"
 
 #include <user_util.h>
 #include <trace.h>
 #include <event_upstream_handler.h>
 
 #define CDEV_CNT    1               //设备的个数
-#define KEY_NAME    "dev_poll"
+#define KEY_NAME    "drv_fasync"
 
 #define KEY_CNT     1               //按键数量
 
 #define KEY_DELAY   20              //消抖
 
 static  DECLARE_WAIT_QUEUE_HEAD(wq);//定义一个等待队列
+
+/**
+ * 因为 fasync 接口传参多半是双重指针，所以变量定义一个指针变量好理解一些
+ */
+static  fasync_struct_t *mp_fasync = NULL;
 
 enum
 {
@@ -97,26 +102,48 @@ static void irq0_timer_cb_handler( unsigned long param)
 
     sub_event_t sub_event ;
 
-    if( gpio_get_value(p_io_irq_des->gpio) == 0 )
-    {
-        sub_event.event = BUTTON_PUSH;
-        sub_event.d_len = sizeof(int);
-        sub_event.p_data = (uint8_t *)&p_io_irq_des->gpio;
+    static uint8_t old_pin_status = 1;
+    uint8_t pin_status = 1;
 
-        trace_infoln("%s push" , p_io_irq_des->name );
-    }
-    else
+    pin_status = gpio_get_value(p_io_irq_des->gpio);
+    if(old_pin_status != pin_status)
     {
-        sub_event.event = BUTTON_RELEASE;
-        sub_event.d_len = sizeof(int);
-        sub_event.p_data = (uint8_t *)&p_io_irq_des->gpio;
-        trace_infoln("%s release",p_io_irq_des->name);
+        if(pin_status == 0)
+        {
+            sub_event.event = BUTTON_PUSH;
+            sub_event.d_len = sizeof(int);
+            sub_event.p_data = (uint8_t *)&p_io_irq_des->gpio;
+
+            trace_infoln("%s push" , p_io_irq_des->name );
+        }
+        else
+        {
+            sub_event.event = BUTTON_RELEASE;
+            sub_event.d_len = sizeof(int);
+            sub_event.p_data = (uint8_t *)&p_io_irq_des->gpio;
+
+            trace_infoln("%s release",p_io_irq_des->name);
+        }
+
+        old_pin_status = pin_status;
     }
 
     sub_event_push(&sub_event);
 
+    /**
+     * poll 接口应用
+     */
     m_wake_up_condition = true;
     wake_up_interruptible(&wq);
+
+    /**
+     * fasync 信号异步通知
+     */
+    if(mp_fasync != NULL)
+    {
+        kill_fasync(&mp_fasync, SIGIO,  POLL_IN);
+    }
+
 }
 
 /**
@@ -260,12 +287,24 @@ static   unsigned int  dev_poll(struct file* filp, struct poll_table_struct*  ta
 	return 0;
 }
 
+/** 函数原型
+ *  int (*fasync) (int, struct file *, int);
+ */
+static int dev_fasync(int fd, struct file *filp, int on)
+{
+    /**
+     * 把驱动层的信号结构体传输结构体 和 app层应用进程绑定
+     */
+    return  fasync_helper(fd, filp, on, &mp_fasync);
+}
+
 //设备操作数据结构体
 static file_operations_t dev_fops ={
-    .owner = THIS_MODULE ,
+    .owner = THIS_MODULE,
     .open  = dev_open,
     .read  = dev_read,
     .poll  = dev_poll,
+    .fasync= dev_fasync,
 };
 
 /**
