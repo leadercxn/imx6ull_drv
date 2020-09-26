@@ -15,7 +15,7 @@ typedef struct property            proper_t ;
 typedef struct timer_list          timer_list_t ;
 typedef struct fasync_struct       fasync_struct_t;
 typedef struct miscdevice          miscdevice_t;
-
+typedef struct input_dev           input_dev_t;
 
 ////////////////////////// 內联函数 //////////////////////////////////
 
