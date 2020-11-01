@@ -27,7 +27,7 @@
 
 typedef struct 
 {
-    dev_t       dev_id ;  
+    dev_t       dev_id ;
     cdev_t      cdev   ;
     class_t     *p_dev_class  ;
     device_t    *p_dev_device ;

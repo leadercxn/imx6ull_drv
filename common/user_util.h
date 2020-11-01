@@ -17,6 +17,9 @@ typedef struct fasync_struct       fasync_struct_t;
 typedef struct miscdevice          miscdevice_t;
 typedef struct input_dev           input_dev_t;
 
+typedef struct i2c_msg             i2c_msg_t;
+typedef struct i2c_client          i2c_client_t;
+
 ////////////////////////// 內联函数 //////////////////////////////////
 
 /**
