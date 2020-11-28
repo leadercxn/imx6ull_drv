@@ -20,6 +20,10 @@ typedef struct input_dev           input_dev_t;
 typedef struct i2c_msg             i2c_msg_t;
 typedef struct i2c_client          i2c_client_t;
 
+typedef struct spi_message         spi_message_t;
+typedef struct spi_device          spi_device_t;
+typedef struct spi_transfer        spi_transfer_t;
+
 ////////////////////////// 內联函数 //////////////////////////////////
 
 /**
